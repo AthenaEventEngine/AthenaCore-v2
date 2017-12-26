@@ -1,0 +1,66 @@
+group 'com.github.athenaengine.core'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '1.1.3'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile 'com.github.luksdlt92:WinstonUtils:1.0.2'
+    compile 'com.github.AthenaEventEngine:AthenaEssentialsGeneric:v0.11'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+jar {
+    from {
+        (configurations.compile).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date(),
+                'Built-JDK': System.getProperty('java.version'),
+                'Main-Class': 'com.github.athenaengine.essentials.Essentials'
+    }
+    archiveName = 'AthenaEngineEssentials_' + version + '.jar'
+}
+
+task zip(type: Zip) {
+    def fileName = 'AthenaEngineCore_' + new Date().format("yyyy-MM-dd")
+    baseName = fileName
+    from('dist')
+    into('libs') {
+        from(jar)
+    }
+    println 'Build in build/distributions/' + fileName + '.zip'
+}
+
+build.finalizedBy(zip)
